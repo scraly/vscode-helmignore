@@ -1,0 +1,84 @@
+{
+	"name": "helmignore",
+	"displayName": "helmignore",
+	"description": "Language support for .helmignore files. Lets you pull .helmignore files from the https://github.com/scraly/helmignore repository.",
+	"version": "0.1.0",
+	"publisher": "scraly",
+	"icon": "icon.png",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/scraly/vscode-helmignore"
+	},
+	"bugs": {
+		"url": "https://github.com/scraly/vscode-helmignore/issues"
+	},
+	"homepage": "https://github.com/scraly/vscode-helmignore/issues",
+	"license": "MIT",
+	"engines": {
+		"vscode": "^1.18.0"
+	},
+	"categories": [
+		"Programming Languages",
+		"Other"
+	],
+	"activationEvents": [
+		"onCommand:addhelmignore"
+	],
+	"main": "./out/extension",
+	"contributes": {
+		"commands": [
+			{
+				"command": "addhelmignore",
+				"title": "Add helmignore"
+			}
+		],
+		"configuration": {
+			"type": "object",
+			"title": "helmignore extension configuration",
+			"properties": {
+				"gitignore.cacheExpirationInterval": {
+					"type": "integer",
+					"default": 3600,
+					"description": "Number of seconds the list of `.helmignore` files retrieved from github will be cached"
+				}
+			}
+		},
+		"languages": [
+			{
+				"id": "helmignore",
+				"aliases": [
+					"Helmignore"
+				],
+				"filenames": [
+					".helmignore"
+				],
+				"configuration": "./helmignore.configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "helmignore",
+				"scopeName": "text.helmignore",
+				"path": "./syntaxes/helmignore.json"
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"test": "npm run compile && node ./node_modules/vscode/bin/test"
+	},
+	"devDependencies": {
+		"@types/mocha": "^2.2.42",
+		"@types/node": "^8.10.38",
+		"tslint": "^5.11.0",
+		"typescript": "^2.9.2",
+		"vsce": "^1.53.0",
+		"vscode": "^1.1.21"
+	},
+	"dependencies": {
+		"github": "^13.1.1"
+	}
+}

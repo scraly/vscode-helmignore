@@ -43,7 +43,7 @@ export class GitignoreRepository {
 	}
 
 	/**
-	 * Get all .gitignore files
+	 * Get all .helmignore files
 	 */
 	public getFiles(path: string = ''): Thenable<GitignoreFile[]> {
 		return new Promise((resolve, reject) => {
@@ -54,7 +54,7 @@ export class GitignoreRepository {
 				return;
 			}
 
-			// Download .gitignore files from github
+			// Download .helmignore files from github
 			this.client.repos.getContent({
 				owner: 'github',
 				repo: 'scraly',
@@ -65,7 +65,7 @@ export class GitignoreRepository {
 					return;
 				}
 
-				console.log(`vscode-gitignore: Github API ratelimit remaining: ${response.meta['x-ratelimit-remaining']}`);
+				console.log(`vscode-helmignore: Github API ratelimit remaining: ${response.meta['x-ratelimit-remaining']}`);
 
 				let files = (response.data as GitHubRepositoryItem[])
 					.filter(file => {
@@ -95,7 +95,7 @@ export class GitignoreRepository {
 			let flags = operation.type === OperationType.Overwrite ? 'w' : 'a';
 			let file = fs.createWriteStream(operation.path, { flags: flags });
 
-			// If appending to the existing .gitignore file, write a NEWLINE as separator
+			// If appending to the existing .helmignore file, write a NEWLINE as separator
 			if(flags === 'a') {
 				file.write('\n');
 			}
@@ -114,7 +114,7 @@ export class GitignoreRepository {
 					resolve(operation);
 				});
 			}).on('error', (err) => {
-				// Delete the .gitignore file if we created it
+				// Delete the .helmignore file if we created it
 				if(flags === 'w') {
 					fs.unlink(operation.path, err => console.error(err.message));
 				}
@@ -168,7 +168,7 @@ function getAgent() {
 }
 
 function getGitignoreFiles() {
-	// Get lists of .gitignore files from Github
+	// Get lists of .helmignore files from Github
 	return Promise.all([
 		gitignoreRepository.getFiles()
 	])
@@ -184,11 +184,11 @@ function promptForOperation() {
 	return vscode.window.showQuickPick([
 		{
 			label: 'Append',
-			description: 'Append to existing .gitignore file'
+			description: 'Append to existing .helmignore file'
 		},
 		{
 			label: 'Overwrite',
-			description: 'Overwrite existing .gitignore file'
+			description: 'Overwrite existing .helmignore file'
 		}
 	]);
 }
@@ -196,18 +196,18 @@ function promptForOperation() {
 function showSuccessMessage(operation: GitignoreOperation) {
 	switch(operation.type) {
 		case OperationType.Append:
-			return vscode.window.showInformationMessage(`Appended ${operation.file.description} to the existing .gitignore in the project root`);
+			return vscode.window.showInformationMessage(`Appended ${operation.file.description} to the existing .helmignore in the project root`);
 		case OperationType.Overwrite:
-			return vscode.window.showInformationMessage(`Created .gitignore file in the project root based on ${operation.file.description}`);
+			return vscode.window.showInformationMessage(`Created .helmignore file in the project root based on ${operation.file.description}`);
 		default:
 			throw new Error('Unsupported operation');
 	}
 }
 
 export function activate(context: vscode.ExtensionContext) {
-	console.log('vscode-gitignore: extension is now active!');
+	console.log('vscode-helmignore: extension is now active!');
 
-	let disposable = vscode.commands.registerCommand('addgitignore', () => {
+	let disposable = vscode.commands.registerCommand('addhelmignore', () => {
 		// Check if workspace open
 		if(!vscode.workspace.rootPath) {
 			vscode.window.showErrorMessage('No workspace directory open');
@@ -218,14 +218,14 @@ export function activate(context: vscode.ExtensionContext) {
 			.then(() => {
 				return vscode.window.showQuickPick(getGitignoreFiles());
 			})
-			// Check if a .gitignore file exists
+			// Check if a .helmignore file exists
 			.then(file => {
 				if(!file) {
 					// Cancel
 					throw new CancellationError();
 				}
 
-				var path = vscode.workspace.rootPath + '/.gitignore';
+				var path = vscode.workspace.rootPath + '/.helmignore';
 
 				return new Promise<GitignoreOperation>((resolve, reject) => {
 					// Check if file exists
