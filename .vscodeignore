@@ -1,0 +1,15 @@
+.editorconfig
+.gitattributes
+.gitignore
+icon/**
+out/**/*.map
+out/test/**
+src/**
+TODO.md
+.travis.yml
+tsconfig.json
+tslint.json
+types/**
+vsc-extension-quickstart.md
+.vscode/**
+.vscode-test/**

@@ -13,7 +13,18 @@ Start command palette (with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> or <kb
 ## Roadmap
 
 ### v0.1.0
+
 - Add language support for `.helmignore` files
+
+## Run locally
+
+```
+$ git clone https://github.com/scraly/vscode-helmignore.git
+$ cd vscode-helmignore
+$ npm install
+$ npm run compile
+$ code .
+```
 
 ## Changelog
 
