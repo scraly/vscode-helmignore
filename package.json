@@ -2,7 +2,7 @@
 	"name": "helmignore",
 	"displayName": "helmignore",
 	"description": "Language support for .helmignore files. Lets you pull .helmignore files from the https://github.com/scraly/helmignore repository.",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"publisher": "scraly",
 	"icon": "icon.png",
 	"repository": {
@@ -26,12 +26,6 @@
 	],
 	"main": "./out/extension",
 	"contributes": {
-		"commands": [
-			{
-				"command": "addhelmignore",
-				"title": "Add helmignore"
-			}
-		],
 		"configuration": {
 			"type": "object",
 			"title": "helmignore extension configuration",
@@ -73,10 +67,10 @@
 	"devDependencies": {
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^8.10.38",
-		"tslint": "^5.11.0",
-		"typescript": "^2.9.2",
+		"tslint": "^5.8.0",
+		"typescript": "^3.1.4",
 		"vsce": "^1.53.0",
-		"vscode": "^1.1.21"
+		"vscode": "^1.1.25"
 	},
 	"dependencies": {
 		"github": "^13.1.1"

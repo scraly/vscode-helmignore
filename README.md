@@ -12,7 +12,7 @@ Start command palette (with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> or <kb
 
 ## Roadmap
 
-### v0.1.0
+### v1.0.0
 
 - Add language support for `.helmignore` files
 

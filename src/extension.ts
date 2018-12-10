@@ -24,17 +24,17 @@ interface GitHubRepositoryItem {
 	type: string;
 }
 
-interface GitignoreOperation {
+interface HelmignoreOperation {
 	type: OperationType;
 	path: string;
-	file: GitignoreFile;
+	file: HelmignoreFile;
 }
 
-export interface GitignoreFile extends vscode.QuickPickItem {
+export interface HelmignoreFile extends vscode.QuickPickItem {
 	url: string;
 }
 
-export class GitignoreRepository {
+export class HelmignoreRepository {
 	private cache: Cache;
 
 	constructor(private client: any) {
@@ -43,12 +43,12 @@ export class GitignoreRepository {
 	}
 
 	/**
-	 * Get all .helmignore files
+	 * Get .helmignore file
 	 */
-	public getFiles(path: string = ''): Thenable<GitignoreFile[]> {
+	public getFile(): Thenable<HelmignoreFile[]> {
 		return new Promise((resolve, reject) => {
 			// If cached, return cached content
-			let item = this.cache.get('gitignore/' + path);
+			let item = this.cache.get('helmignore/Helm.helmignore');
 			if(typeof item !== 'undefined') {
 				resolve(item);
 				return;
@@ -56,8 +56,53 @@ export class GitignoreRepository {
 
 			// Download .helmignore files from github
 			this.client.repos.getContent({
-				owner: 'github',
-				repo: 'scraly',
+				owner: 'scraly',
+				repo: 'helmignore',
+				path: 'Helm.helmignorefile'
+			}, (err: any, response: any) => {
+				if(err) {
+					reject(`${err.code}: ${err.message}`);
+					return;
+				}
+
+				console.log(`vscode-helmignore: Github API ratelimit remaining: ${response.meta['x-ratelimit-remaining']}`);
+
+				let files = (response.data as GitHubRepositoryItem[])
+					.filter(file => {
+						return (file.type === 'file' && file.name.endsWith('.helmignore'));
+					})
+					.map(file => {
+						return {
+							label: file.name.replace(/\.helmignore/, ''),
+							description: file.path,
+							url: file.download_url
+						};
+					});
+
+				// Cache the retrieved gitignore files
+				this.cache.add(new CacheItem('helmignore/' + 'Helm.helmignore', files));
+
+				resolve(files);
+			});
+		});
+	}
+
+	/**
+	 * Get all .helmignore files
+	 */
+	public getFiles(path: string = ''): Thenable<HelmignoreFile[]> {
+		return new Promise((resolve, reject) => {
+			// If cached, return cached content
+			let item = this.cache.get('helmignore/' + path);
+			if(typeof item !== 'undefined') {
+				resolve(item);
+				return;
+			}
+
+			// Download .helmignore files from github
+			this.client.repos.getContent({
+				owner: 'scraly',
+				repo: 'helmignore',
 				path: path
 			}, (err: any, response: any) => {
 				if(err) {
@@ -80,7 +125,7 @@ export class GitignoreRepository {
 					});
 
 				// Cache the retrieved gitignore files
-				this.cache.add(new CacheItem('gitignore/' + path, files));
+				this.cache.add(new CacheItem('helmignore/' + path, files));
 
 				resolve(files);
 			});
@@ -90,7 +135,7 @@ export class GitignoreRepository {
 	/**
 	 * Downloads a .helmignore from the repository to the path passed
 	 */
-	public download(operation: GitignoreOperation): Thenable<GitignoreOperation> {
+	public download(operation: HelmignoreOperation): Thenable<HelmignoreOperation> {
 		return new Promise((resolve, reject) => {
 			let flags = operation.type === OperationType.Overwrite ? 'w' : 'a';
 			let file = fs.createWriteStream(operation.path, { flags: flags });
@@ -146,8 +191,8 @@ let client = new GitHubApi({
 	proxy: proxy
 });
 
-// Create gitignore repository
-let gitignoreRepository = new GitignoreRepository(client);
+// Create helmignore repository
+let helmignoreRepository = new HelmignoreRepository(client);
 
 
 let agent: any;
@@ -167,15 +212,16 @@ function getAgent() {
 	return agent;
 }
 
-function getGitignoreFiles() {
+function getHelmignoreFiles() {
 	// Get lists of .helmignore files from Github
 	return Promise.all([
-		gitignoreRepository.getFiles()
+		helmignoreRepository.getFiles()
+		// helmignoreRepository.getFile()
 	])
 		// Merge the two result sets
 		.then((result) => {
-			let files: GitignoreFile[] = Array.prototype.concat.apply([], result)
-				.sort((a: GitignoreFile, b: GitignoreFile) => a.label.localeCompare(b.label));
+			let files: HelmignoreFile[] = Array.prototype.concat.apply([], result)
+				.sort((a: HelmignoreFile, b: HelmignoreFile) => a.label.localeCompare(b.label));
 			return files;
 		});
 }
@@ -193,7 +239,7 @@ function promptForOperation() {
 	]);
 }
 
-function showSuccessMessage(operation: GitignoreOperation) {
+function showSuccessMessage(operation: HelmignoreOperation) {
 	switch(operation.type) {
 		case OperationType.Append:
 			return vscode.window.showInformationMessage(`Appended ${operation.file.description} to the existing .helmignore in the project root`);
@@ -216,7 +262,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		Promise.resolve()
 			.then(() => {
-				return vscode.window.showQuickPick(getGitignoreFiles());
+				return vscode.window.showQuickPick(getHelmignoreFiles());
 			})
 			// Check if a .helmignore file exists
 			.then(file => {
@@ -227,7 +273,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 				var path = vscode.workspace.rootPath + '/.helmignore';
 
-				return new Promise<GitignoreOperation>((resolve, reject) => {
+				return new Promise<HelmignoreOperation>((resolve, reject) => {
 					// Check if file exists
 					fs.stat(path, (err) => {
 						if(err) {
@@ -252,8 +298,8 @@ export function activate(context: vscode.ExtensionContext) {
 				});
 			})
 			// Store the file on file system
-			.then((operation: GitignoreOperation) => {
-				return gitignoreRepository.download(operation);
+			.then((operation: HelmignoreOperation) => {
+				return helmignoreRepository.download(operation);
 			})
 			// Show success message
 			.then((operation) => {
